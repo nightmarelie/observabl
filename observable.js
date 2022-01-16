@@ -102,16 +102,28 @@ function filter(filterFn) {
 // map operator
 function map(mapFn) {
   return function operator(srcObservable) {
-    return new Observable((observer) => {});
+    return new Observable((observer) => {
+      const subscription = srcObservable.subscribe((v) => {
+        observer(mapFn(v));
+      });
+
+      return subscription;
+    });
   };
 }
 
 const inputbox = document.getElementById("textbox");
 
 const obs5$ = fromEvent(inputbox, "input").pipe(
-  filter((e) => e.target.value != 12)
+  filter((e) => e.target.value != 12),
+  map((e) => e.target.value * 2)
 );
 
-const subscription = obs5$.subscribe((e) => console.log(e.target.value));
+const subscription = obs5$.subscribe((v) => console.log(v));
+
+setTimeout(() => {
+  // unsubscribe from initial observable
+  subscription.unsubscribe();
+}, 10000);
 
 // Pipeable operators: end
