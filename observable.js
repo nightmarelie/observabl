@@ -8,6 +8,14 @@ class Observable {
     // Return result od "producer" containing "unsubscribe"
     return this._producer(observer);
   }
+
+  pipe(...operators) {
+    // operator(operator(operator(initialObservable)))
+    return operators.reduce(
+      (src, operator) => operator(src),
+      this // initial source observable
+    );
+  }
 }
 
 // Simple observable: start
@@ -75,4 +83,35 @@ setTimeout(() => {
 // DOM events observables: end
 
 // Pipeable operators: start
+
+// filter operator
+function filter(filterFn) {
+  return function operator(srcObservable) {
+    return new Observable((observer) => {
+      const subscription = srcObservable.subscribe((v) => {
+        if (filterFn(v)) {
+          observer(v);
+        }
+      });
+
+      return subscription;
+    });
+  };
+}
+
+// map operator
+function map(mapFn) {
+  return function operator(srcObservable) {
+    return new Observable((observer) => {});
+  };
+}
+
+const inputbox = document.getElementById("textbox");
+
+const obs5$ = fromEvent(inputbox, "input").pipe(
+  filter((e) => e.target.value != 12)
+);
+
+const subscription = obs5$.subscribe((e) => console.log(e.target.value));
+
 // Pipeable operators: end
